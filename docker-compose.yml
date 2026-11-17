@@ -1,0 +1,15 @@
+# Ajouté par le panel admin pour le déploiement sur le VPS. Adapte-le si besoin.
+services:
+  app:
+    build: .
+    container_name: zeste
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
