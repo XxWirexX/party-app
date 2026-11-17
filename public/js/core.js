@@ -1,4 +1,6 @@
 /* Zeste — noyau d'interface : utilitaires, icônes, Limo, verres, feuilles, toasts, confettis. */
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } };
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -23,6 +25,7 @@ const ICONS = {
   flame: 'M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z',
   spark: 'M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z', copy: 'M9 9h10v11H9zM5 15V4h10',
   disco: 'M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 2v3M4 13h16M6 9h12M6 17h12M12 5v16',
+  print: 'M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z',
   camera: 'M4 8h3l2-3h6l2 3h3v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
 };
 const ico = (n, size = 22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS[n]}"/></svg>`;
@@ -181,7 +184,7 @@ function typeInto(el, text) {
 
 /* Limo explique chaque section la première fois qu'on y passe. */
 function coach(key) {
-  const seen = Store.lsGet('zeste:seen', {});
+  const seen = lsGet('zeste:seen', {});
   const el = $('#coach');
   if (seen[key] || !COACH[key]) { el.classList.remove('on'); return; }
   el.classList.toggle('low', key === 'night');
@@ -226,7 +229,7 @@ async function compressPhoto(file) {
   const url = URL.createObjectURL(file);
   try {
     const img = await loadImg(url);
-    let max = 1280, q = 0.78, out, w, h;
+    let max = 1600, q = 0.8, out, w, h;
     for (let i = 0; i < 6; i++) {
       const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
       w = Math.round(img.naturalWidth * s); h = Math.round(img.naturalHeight * s);
@@ -234,7 +237,7 @@ async function compressPhoto(file) {
       c.width = w; c.height = h;
       c.getContext('2d').drawImage(img, 0, 0, w, h);
       out = c.toDataURL('image/jpeg', q);
-      if (out.length < 185000) break;
+      if (out.length < 400000) break;
       max = Math.round(max * 0.8); q = Math.max(0.5, q - 0.07);
     }
     return { src: out, w, h };

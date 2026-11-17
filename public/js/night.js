@@ -5,7 +5,7 @@ const LEVELS = ['Soft', 'Classique', 'Corsé'];
 function nightInit(p) {
   if (N.pid === p.id) return;
   N.pid = p.id; N.level = 1; N.turn = 0; N.cursor = -1;
-  const host = me(), names = guestsOf(p.id).filter(g => g.status === 'yes').map(g => g.name);
+  const host = myM().name, names = P().members.filter(g => g.status === 'yes').map(g => g.name);
   N.players = [...new Set([...(host ? [host] : []), ...names])].map(n => ({ n, st: 'on' }));
 }
 const active = () => N.players.filter(x => x.st !== 'off');

@@ -1,39 +1,79 @@
 # Zeste
 
-Application web mobile pour organiser une soirée de bout en bout, avec Limo le citron vert comme guide.
+Application web pour organiser une soirée à plusieurs, sur téléphone comme sur ordinateur, avec Limo le citron vert comme guide.
 
-- **QG** : compte à rebours, jauges (invités, courses, budget par personne), conseils de Limo, check-list de J-7 à J+1.
-- **Invités** : réponses (vient, peut-être, ne vient pas), accompagnants, « qui ramène quoi », texte d'invitation à copier.
-- **Courses et stock** : liste par rayon, budget, calcul automatique des quantités, suivi du stock pendant la soirée.
-- **Bar** : 16 recettes (dont 3 sans alcool) comparées à la liste de courses, quantités ajustables, carte du soir, shaker surprise.
-- **Mode soirée** : 7 jeux (Je n'ai jamais, Action ou vérité, La roue, Qui de nous, La bouteille, La pioche, La bombe), trois intensités, rôle de Sam.
-- **Galerie** : photos compressées dans le navigateur, visionneuse, diaporama.
+## Ce qu'elle fait
 
-## Structure
+- **Soirée partagée** : l'orga envoie un lien (ou un QR code). Chacun répond depuis son téléphone et voit les changements des autres en direct.
+- **Rôles** :
+  - *Orga* : gère tout, y compris les membres et le lien d'invitation. Il peut y en avoir plusieurs.
+  - *Participe* : modifie les courses, la check-list, le bar et les comptes.
+  - *Suit* : voit tout, gère sa réponse et poste ses photos.
 
-| Fichier | Rôle |
-| --- | --- |
-| `app.html` | Styles et squelette de la page (c'est ce fichier qui est publié comme artifact Claude) |
-| `js/data.js` | Contenus : ambiances, cocktails, jeux, estimation des courses |
-| `js/store.js` | Stockage : base partagée de l'artifact, sinon localStorage et IndexedDB |
-| `js/core.js` | Icônes, mascotte, verres dessinés, feuilles, confettis |
-| `js/screens.js` | Accueil, assistant de création, les cinq onglets |
-| `js/night.js` | Mode soirée et jeux |
-| `js/main.js` | Interactions et démarrage |
-| `build.mjs` | Génère `index.html`, la version autonome |
-
-Aucune dépendance, aucun bundler.
+  À la création, l'orga choisit le rôle donné aux nouveaux venus (« tout le monde participe » ou « les invités suivent »). Ce choix se change ensuite dans la fenêtre d'invitation, ou personne par personne.
+- **Invités sans l'appli** : on les ajoute à la main et on gère leur réponse. S'ils rejoignent plus tard, ils se reconnaissent dans la liste (« C'est moi, Karim »), ou reçoivent un lien perso qui les reconnaît directement. Pas de doublon.
+- **Courses, stock et comptes** :
+  - Celui qui coche un article est noté comme payeur, ce qui reste modifiable.
+  - On peut ajouter des dépenses hors liste (taxi, location).
+  - L'onglet Comptes montre ce que chacun a payé, sa part (accompagnants compris, on peut exclure quelqu'un), ce qui reste à acheter par responsable, et les remboursements conseillés en un minimum de virements. « Réglé » les solde.
+- **Bar** :
+  - 16 recettes intégrées, plus des cocktails maison (création, ou duplication d'une recette existante).
+  - « Ajouter les ingrédients manquants » met les quantités pour N verres dans la liste de courses.
+  - La carte du soir peut s'imprimer.
+- **Check-list** modifiable : ajouter, renommer, supprimer, cocher.
+- **Mode soirée** : 7 jeux, trois intensités, rôle de Sam.
+- **Galerie** : tout le monde ajoute ses photos, likes, diaporama.
+- **Comptes sans mot de passe** : un cookie de session. Pour changer d'appareil : Ton compte → « Créer le lien », un lien à usage unique valable 15 minutes.
 
 ## Lancer en local
 
+Il faut Node 20 ou plus et Postgres 14 ou plus.
+
 ```bash
-node build.mjs
+docker compose up -d
 ```
 
 ```bash
-npx serve .
+npm install
 ```
 
-Ouvert hors de Claude (en local ou sur GitHub Pages), Zeste fonctionne en mode solo : les données restent sur l'appareil.
+```bash
+npm run dev
+```
+
+L'app tourne sur http://localhost:3000. Le schéma est créé au démarrage (`server/migrations`).
+
+`DATABASE_URL` pointe par défaut sur `postgres://zeste:zeste@127.0.0.1:5432/zeste` (voir `.env.example`).
+
+## Tests
+
+Ils tournent sur une vraie base, `zeste_test` par défaut. Pour en utiliser une autre, définis `TEST_DATABASE_URL`.
+
+```bash
+npm test
+```
+
+## Mise en ligne
+
+N'importe quel hébergeur Node avec une base Postgres convient : Render, Railway, Fly.io, ou un VPS.
+
+1. Définis `DATABASE_URL`, ajoute `?sslmode=require` si la base l'exige, et `NODE_ENV=production`.
+2. Lance avec `npm start`.
+
+L'app doit être servie en HTTPS : le cookie de session est `Secure` en production.
+
+## Structure
+
+| Dossier | Rôle |
+| --- | --- |
+| `server/index.js` | API JSON, droits par rôle, flux temps réel (SSE), fichiers statiques |
+| `server/migrations/` | Schéma Postgres |
+| `public/index.html` | Styles et squelette (mobile, tablette, bureau, impression) |
+| `public/js/store.js` | Appels à l'API, mises à jour optimistes, écoute du flux temps réel |
+| `public/js/accounts.js` | Calcul des parts et des remboursements (testé) |
+| `public/js/screens.js` | Écrans et fenêtres |
+| `public/js/main.js` | Actions et démarrage |
+| `public/js/night.js` | Mode soirée |
+| `test/` | Tests d'API et de calcul des comptes |
 
 L'abus d'alcool est dangereux pour la santé. Le mode Soft et le rôle de Sam sont là pour ça.

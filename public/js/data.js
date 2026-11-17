@@ -19,17 +19,6 @@ const CATS = [
   { id: 'divers', label: 'Glaçons et matos' },
 ];
 
-const TASKS = [
-  { id: 't1', when: 'J-7', label: 'Envoyer les invitations' },
-  { id: 't2', when: 'J-5', label: 'Relancer ceux qui n’ont pas répondu' },
-  { id: 't3', when: 'J-3', label: 'Boucler la liste de courses' },
-  { id: 't4', when: 'J-1', label: 'Faire les courses' },
-  { id: 't5', when: 'J-1', label: 'Glaçons au congélateur' },
-  { id: 't6', when: 'Jour J', label: 'Playlist prête, enceinte chargée' },
-  { id: 't7', when: 'Jour J', label: 'Planquer les objets fragiles' },
-  { id: 't8', when: 'J+1', label: 'Poster les photos dans la galerie' },
-];
-
 /* Estimation des quantités : 1 verre par personne et par heure, plus un verre d'accueil. */
 function estimateShopping(n, hours, thirst) {
   const f = [0.7, 1, 1.35][thirst];
@@ -174,9 +163,9 @@ const BOTTLE_GAGES = [
 
 const COACH = {
   qg: 'Ici c’est ton QG : compte à rebours, jauges et check-list. Je te préviens si quelque chose cloche.',
-  guests: 'Tape sur le statut d’un invité pour le faire changer. Je tiens les comptes pour toi.',
-  shop: 'Laisse-moi calculer les quantités selon le nombre d’invités. Le jour J, passe en vue Stock pour suivre ce qu’il reste.',
-  bar: 'Je compare chaque recette avec ta liste de courses. « Faisable » veut dire que tu as tout.',
-  gallery: 'Ajoute les photos pendant ou après la soirée. Le diaporama, c’est pour le lendemain difficile.',
+  guests: 'Envoie le lien avec « Inviter » : chacun répond depuis son téléphone. Ceux qui n’ont pas l’appli, ajoute-les à la main.',
+  shop: 'Coche un article quand tu l’achètes, je note que c’est toi qui as payé. L’onglet Comptes dit qui doit quoi à qui.',
+  bar: 'Je compare chaque recette avec la liste de courses. Crée tes cocktails maison et compose la carte du soir à imprimer.',
+  gallery: 'Tout le monde peut ajouter ses photos, pendant ou après. Le diaporama, c’est pour le lendemain difficile.',
   night: 'Mode soirée ! Choisis qui joue et règle l’intensité. Le Sam joue au soft, c’est lui le vrai héros.',
 };
