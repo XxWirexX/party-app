@@ -454,7 +454,14 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 });
 
 async function start(port = Number(process.env.PORT || 3000)) {
-  await migrate();
+  // Au démarrage d'un conteneur, la base peut mettre quelques secondes à accepter les connexions.
+  for (let i = 1; ; i++) {
+    try { await migrate(); break; } catch (e) {
+      if (i >= 30 || !['ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN', '57P03'].includes(e.code)) throw e;
+      console.log(`base indisponible (${e.code}), nouvel essai dans 2 s…`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
   return new Promise(resolve => { const srv = app.listen(port, () => { console.log('Zeste écoute sur le port ' + srv.address().port); resolve(srv); }); });
 }
 if (require.main === module) start().catch(e => { console.error(e); process.exit(1); });

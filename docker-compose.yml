@@ -1,4 +1,5 @@
-# Ajouté par le panel admin pour le déploiement sur le VPS. Adapte-le si besoin.
+# Déploiement sur le VPS : l'app (nom de conteneur « zeste », port 80 comme avant) + sa base Postgres.
+# Dans le .env du serveur, mets au moins POSTGRES_PASSWORD (un mot de passe long et aléatoire).
 services:
   app:
     build: .
@@ -7,9 +8,42 @@ services:
     env_file:
       - path: .env
         required: false
+    environment:
+      PORT: "80"
+      NODE_ENV: production
+      DATABASE_URL: postgres://zeste:${POSTGRES_PASSWORD:-zeste}@db:5432/zeste
+    # Permet à l'utilisateur non root du conteneur d'écouter sur le port 80.
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: "0"
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - proxy
+      - internal
+
+  db:
+    image: postgres:16-alpine
+    container_name: zeste-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zeste
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zeste}
+      POSTGRES_DB: zeste
+    volumes:
+      - zeste-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zeste -d zeste"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - internal
+
+volumes:
+  zeste-db:
 
 networks:
   proxy:
     external: true
+  internal:

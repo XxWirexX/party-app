@@ -30,7 +30,7 @@ Application web pour organiser une soirée à plusieurs, sur téléphone comme s
 Il faut Node 20 ou plus et Postgres 14 ou plus.
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.dev.yml up -d
 ```
 
 ```bash
@@ -55,12 +55,22 @@ npm test
 
 ## Mise en ligne
 
-N'importe quel hébergeur Node avec une base Postgres convient : Render, Railway, Fly.io, ou un VPS.
+Chaque push sur `main` déploie sur le VPS (`.github/workflows/deploy.yml`). Le `docker-compose.yml` lance deux conteneurs :
 
-1. Définis `DATABASE_URL`, ajoute `?sslmode=require` si la base l'exige, et `NODE_ENV=production`.
-2. Lance avec `npm start`.
+- `zeste` : l'app, sur le port 80 et le réseau `proxy`, comme l'ancienne version statique ;
+- `zeste-db` : Postgres, joignable uniquement par l'app, données dans le volume `zeste-db`.
+
+Avant le premier déploiement de cette version, mets dans le `.env` du serveur :
+
+```
+POSTGRES_PASSWORD=un-long-mot-de-passe-aleatoire
+```
+
+Sans lui, le mot de passe par défaut `zeste` est utilisé. La base n'est pas exposée hors du serveur, mais mieux vaut le changer avant le premier lancement : Postgres ne le lit qu'à la création du volume.
 
 L'app doit être servie en HTTPS : le cookie de session est `Secure` en production.
+
+Ailleurs (Render, Railway, Fly.io…) : définis `DATABASE_URL` (avec `?sslmode=require` si la base l'exige) et `NODE_ENV=production`, puis lance `npm start`.
 
 ## Structure
 
